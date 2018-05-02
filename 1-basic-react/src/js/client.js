@@ -1,6 +1,6 @@
-import {createStore} from 'redux';
+import {applyMiddleware, createStore} from 'redux';
 
-const reducer = (state, action) => {
+const reducer = (state=0, action) => {
   if (action.type === 'INC') {
     return state + action.payload;
   }
@@ -10,7 +10,23 @@ const reducer = (state, action) => {
   return state;
 }
 
-const store = createStore(reducer, 0);
+// Logger middleware
+const logger = store => next => action => {
+  console.log('Action fired!', action);
+  action.type = 'DEC';
+  next(action);
+}
+
+// Logger middleware
+const error = store => next => action => {
+  try {
+    next(action);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+const store = createStore(reducer, applyMiddleware(logger, error));
 
 store.subscribe(() => {
   console.log('store changed!', store.getState());
